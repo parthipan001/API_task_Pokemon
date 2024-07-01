@@ -1,6 +1,10 @@
 body {
     background-color: #f8f9fa;
 }
+
 .card {
     margin: 15px;
+    background-color: powderblue;
+    border-radius: 30px;
+    border: 2px solid;
 }

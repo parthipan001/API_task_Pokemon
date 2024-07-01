@@ -1,57 +1,52 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const apis = [
-        'https://api.coindesk.com/v1/bpi/currentprice.json',
-        'https://dog.ceo/api/breeds/image/random',
-        'https://api.chucknorris.io/jokes/random'
-    ];
-
-    Promise.all(apis.map(api => fetch(api).then(response => response.json())))
+    fetch('https://pokeapi.co/api/v2/pokemon?limit=100')
+        .then(response => response.json())
         .then(data => {
-            displayData(data);
+            const promises = data.results.map(pokemon => fetch(pokemon.url).then(res => res.json()));
+            return Promise.all(promises);
+        })
+        .then(pokemons => {
+            displayPokemonCards(pokemons);
         })
         .catch(error => {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching Pokémon data:', error);
         });
 });
 
-function displayData(data) {
-    const [bitcoinData, dogData, jokeData] = data;
-    
+function displayPokemonCards(pokemons) {
     const contentDiv = document.getElementById('content');
-
-    
-    const bitcoinCard = createCard('Bitcoin Price', `USD: ${bitcoinData.bpi.USD.rate}`);
-    contentDiv.appendChild(bitcoinCard);
-
-    
-    const dogCard = createCard('Random Dog', `<img src="${dogData.message}" alt="Dog" class="img-fluid">`);
-    contentDiv.appendChild(dogCard);
-
-    
-    const jokeCard = createCard('Chuck Norris Joke', jokeData.value);
-    contentDiv.appendChild(jokeCard);
+    pokemons.forEach(pokemon => {
+        const card = createCard(pokemon.name, pokemon.sprites.front_default, `Height: ${pokemon.height}, Weight: ${pokemon.weight}`);
+        contentDiv.appendChild(card);
+    });
 }
 
-function createCard(title, content) {
+function createCard(name, imageUrl, details) {
     const colDiv = document.createElement('div');
     colDiv.className = 'col-md-4';
 
     const cardDiv = document.createElement('div');
     cardDiv.className = 'card';
 
+    const cardImg = document.createElement('img');
+    cardImg.className = 'card-img-top';
+    cardImg.src = imageUrl;
+    cardImg.alt = name;
+
     const cardBodyDiv = document.createElement('div');
     cardBodyDiv.className = 'card-body';
 
     const cardTitle = document.createElement('h5');
     cardTitle.className = 'card-title';
-    cardTitle.textContent = title;
+    cardTitle.textContent = name;
 
-    const cardContent = document.createElement('p');
-    cardContent.className = 'card-text';
-    cardContent.innerHTML = content;
+    const cardText = document.createElement('p');
+    cardText.className = 'card-text';
+    cardText.textContent = details;
 
     cardBodyDiv.appendChild(cardTitle);
-    cardBodyDiv.appendChild(cardContent);
+    cardBodyDiv.appendChild(cardText);
+    cardDiv.appendChild(cardImg);
     cardDiv.appendChild(cardBodyDiv);
     colDiv.appendChild(cardDiv);
 
